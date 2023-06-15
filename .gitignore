@@ -5,10 +5,12 @@
 
 !hypr/hyprland.conf
 !hypr/hyprpaper.conf
+!hypr/*.org
 !hypr/README.org
 
 !kitty/kitty.conf
 !waybar/*
 !*.org
+!**/*.org
 
 !.gitignore
