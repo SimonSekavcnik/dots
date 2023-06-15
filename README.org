@@ -1,0 +1,7 @@
+#+TITLE: Simon's Dot Files
+
+This repository include configuration for:
++ hyprland
++ waybar
++ emacs
++ kitty
