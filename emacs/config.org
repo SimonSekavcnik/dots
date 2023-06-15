@@ -1,0 +1,320 @@
+#+title: Test Config
+#+author: Simon Sekavčnik
+
+
+* PACKAGE MANAGEMENT
+#+begin_src emacs-lisp
+(defvar elpaca-installer-version 0.4)
+(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                              :ref nil
+                              :files (:defaults (:exclude "extensions"))
+                              :build (:not elpaca--activate-package)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+       (build (expand-file-name "elpaca/" elpaca-builds-directory))
+       (order (cdr elpaca-order))
+       (default-directory repo))
+  (add-to-list 'load-path (if (file-exists-p build) build repo))
+  (unless (file-exists-p repo)
+    (make-directory repo t)
+    (when (< emacs-major-version 28) (require 'subr-x))
+    (condition-case-unless-debug err
+        (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                 ((zerop (call-process "git" nil buffer t "clone"
+                                       (plist-get order :repo) repo)))
+                 ((zerop (call-process "git" nil buffer t "checkout"
+                                       (or (plist-get order :ref) "--"))))
+                 (emacs (concat invocation-directory invocation-name))
+                 ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                       "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                 ((require 'elpaca))
+                 ((elpaca-generate-autoloads "elpaca" repo)))
+            (kill-buffer buffer)
+          (error "%s" (with-current-buffer buffer (buffer-string))))
+      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+  (unless (require 'elpaca-autoloads nil t)
+    (require 'elpaca)
+    (elpaca-generate-autoloads "elpaca" repo)
+    (load "./elpaca-autoloads")))
+(add-hook 'after-init-hook #'elpaca-process-queues)
+(elpaca `(,@elpaca-order))
+#+end_src
+* GENERAL BEHAVIOUR
+** Evil Mode
+  #+begin_src emacs-lisp
+    
+    (elpaca elpaca-use-package
+      (elpaca-use-package-mode)
+      (setq elpaca-use-package-by-default t))
+    (elpaca-wait)
+
+
+    (use-package evil
+      :init
+      (setq evil-want-keybinding nil)
+      (setq evil-want-integration t)
+      (setq evil-vsplit-window-right t)
+      (setq evil-split-window-below t)
+      (setq evil-want-C-i-jump nil)
+      (evil-mode))
+    (use-package evil-collection
+      :after evil
+      :config
+      (setq evil-collecion-mode-list '(dashboard dired ibuffer))
+      (evil-collection-init))
+
+    ;;Turns off elpaca-use-package-mode current declartion
+    ;;Note this will cause the declaration to be interpreted immediately (not deferred).
+    ;;Useful for configuring built-in emacs features.
+
+    (use-package evil-leader
+      :ensure t
+      :config
+      (evil-leader/set-leader "<SPC>")
+      (evil-leader/set-key-for-mode 'normal "t" 'hydra-toggle/body))
+    (use-package emacs :elpaca nil :config (setq ring-bell-function #'ignore))
+#+end_src
+
+** General
+#+begin_src emacs-lisp
+  (require 'ido)
+  (ido-mode t)
+  (use-package general
+    :config
+    (general-evil-setup t)
+    (defconst my-leader "SPC")
+    (general-create-definer my-leader-def
+        :prefix my-leader)
+    (general-override-mode)
+    (general-define-key
+     :states '(normal visual)
+     :prefix "SPC"
+     "f p" '(lambda () (interactive) (find-file "~/.config/emacs/config.org") :which-key "Open config.org")
+     "f h" '(lambda () (interactive) (find-file "~/.config/hypr/hyprland.conf") :which-key "Open hyprland config")
+     "." '(find-file :which-key "Find File")
+     ;; BUFFER MANIPULATION
+     "t" '(hydra-toggle/body     :which-key "Toggle theme")
+     "h" '(evil-window-left      :which-key "Move Left")
+     "j" '(evil-window-down      :which-key "Move Down")
+     "k" '(evil-window-up        :which-key "Move Up")
+     "l" '(evil-window-right     :which-key "Move Right")
+     "n j" '(split-window-below  :which-key "Split Below")
+     "n l" '(split-window-right  :which-key "Split Right")
+     "x" '(org-capture           :which-key "Org Capture")
+     "b i" '(ibuffer             :which-key "IBuffer")
+     "o B" '(bookmark-set        :which-key "Set Bookmark")
+     "o b j" '(bookmark-jump     :which-key "Open Bookmark")
+     "o b" '(bookmark-bmenu-list :which-key "List Bookmarks")))
+#+end_src
+
+
+** Hydra
+#+begin_src emacs-lisp
+  (use-package hydra
+    :ensure t)
+#+end_src
+
+* APPEARANCE
+** Theme
+Using the Solaized theme
+#+begin_src emacs-lisp
+  (use-package solarized-theme
+    :config
+    (load-theme 'solarized-dark t)) ; Choose 'solarized-light' for light theme
+#+end_src
+
+** Disable Menubar, Toolbars and Scrollbars
+#+begin_src emacs-lisp
+  (set-frame-font "Fira Code")
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+#+end_src
+
+** Display Line Numbers and Truncate lines
+#+begin_src emacs-lisp
+  (global-display-line-numbers-mode 1)
+  (global-visual-line-mode t)
+#+end_src
+
+** Initial Screen
+#+begin_src emacs-lisp
+  (setq initial-major-mode 'org-mode)
+  (setq inhibit-startup-message t
+    initial-scratch-message "* SIMON'S EMACS"
+        cursor-type 'bar)
+#+end_src
+
+* MODES
+** Org Mode 
+Org mode configuration
+#+begin_src emacs-lisp
+        ;; Enable automatic line wrapping in org mode
+        (add-hook 'org-mode-hook
+                  (lambda ()
+                    (setq fill-column 80) ; Set the desired line width
+                    (turn-on-auto-fill)))
+
+        ;; Configure visual line mode for org mode
+        (add-hook 'org-mode-hook 'visual-line-mode)
+        (add-to-list 'org-structure-template-alist
+                     '("s" "#+NAME: ?\n#+BEGIN_SRC \n\n#+END_SRC"))
+        (setq org-confirm-babel-evaluate nil)
+
+
+        (defun org-icons ()
+          "Beautify org mode keywords."
+          (setq prettify-symbols-alist '(("TODO" . "")
+                                         ("INBOX" . "")
+                                         ("NEXT" . "")
+                                         ("WAITING" . "")        
+                                         ("WAIT" . "")        
+                                         ("NOPE" . "")
+                                         ("DONE" . "")
+                                         ("[#A]" . "")
+                                         ("[#B]" . "")
+                                         ("[#C]" . "")
+                                         ("[ ]" . "")
+                                         ("[X]" . "")
+                                         ("[-]" . "")
+                                         ("#+BEGIN_SRC" . "")
+                                         ("#+END_SRC" . "")
+                                         ("#+begin_src" . "")
+                                         ("#+end_src" . "")
+                                         (":PROPERTIES:" . "")
+                                         ("#+OPTIONS" . "")
+                                         (":END:" . "―")
+                                         ("#+STARTUP:" . "")
+                                         ("#+TITLE: " . "")
+                                         ("#+RESULTS:" . "")
+                                         ("#+DESCRIPTION:" . "")
+                                         ("#+NAME:" . "")
+                                         ("#+ROAM_TAGS:" . "")
+                                         ("#+FILETAGS:" . "")
+                                         ("#+HTML_HEAD:" . "")
+                                         ("#+SUBTITLE:" . "")
+                                         ("#+AUTHOR:" . "")
+                                         (":Effort:" . "")
+                                         ("SCHEDULED:" . "")
+                                         ("DEADLINE:" . "")))
+          (prettify-symbols-mode))
+        (add-hook 'org-mode-hook #'org-icons)
+
+        (use-package org-superstar
+          :config
+          (setq org-superstar-special-todo-items t)
+          (add-hook 'org-mode-hook (lambda ()
+                                     (org-superstar-mode 1))))
+        (defface my-ligature-face
+          '((t (:family "Fira Code" :height 1.0))) ;; Replace "Fira Code" with the name of your desired font
+          "Face for ligature"
+          :group 'org-faces)
+
+      (use-package org-appear
+        :hook (org-mode . org-appear-mode))
+      (setq org-startup-indented t
+            org-pretty-entities t
+            org-hide-emphasis-markers t
+            org-startup-with-inline-images t
+            org-image-actual-width '(300))
+      (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
+    ;; Configure org-mode to open links in the same buffer
+    (setq org-return-follows-link t)
+
+
+  (defun my-org-mode-keys ()
+    (when (bound-and-true-p evil-local-mode)
+      (evil-define-key 'normal org-mode-map (kbd "RET") 'org-open-at-point)))
+
+  (add-hook 'org-mode-hook 'my-org-mode-keys)
+
+    ;; Configure evil-mode to open links in the same buffer
+
+#+end_src
+** Org Roam
+#+begin_src emacs-lisp
+    (use-package org-roam
+      :ensure t
+      :init
+      (setq org-roam-v2-ack t)
+      :custom
+      (org-roam-directory "~/.roam")
+      :config
+      (defhydra my-org-roam-hydra (:color blue :hint nil)
+        "
+          ^Roam^                ^Capture^        ^Dailies^ 
+          ^────^──────────────  ^──────^───────  ^———————^—————
+          _g_: Goto             _c_: Capture     _T_: Today
+          _i_: Insert           _r_: Refile      _L_: Tomorrow
+          _f_: Find             _d_: Delete      _Y_: Yesterday
+          _l_: Insert Link                     _F_: Find Date
+          "
+        ("g" org-roam-node-find)
+        ("i" org-roam-node-insert)
+        ("f" org-roam-node-find)
+        ("l" org-roam-insert-link)
+        ("c" org-roam-capture)
+        ("r" org-roam-refile)
+        ("d" org-roam-node-delete)
+        ("T" org-roam-dailies-goto-today)
+        ("L" org-roam-dailies-goto-tommorow)
+        ("Y" org-roam-dailies-goto-yesterday)
+        ("F" org-roam-dailies-find-date))
+      (general-define-key
+       :prefix "SPC"
+       :states '(motion normal visual)
+       :keymaps 'override
+       "r" '(my-org-roam-hydra/body :which-key "Org Roam")))
+
+
+  (setq org-return-follows-link t)
+
+  (setq org-roam-dailies-capture-templates
+        '(("d" "default" entry
+           "* %<%H:%M> %?\n\n"
+           :target (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n\n* The One Thing\n** Big Picture\n*** Career\n*** Health\n*** Relationships\n*** Health\n*** Personal Growth\n** Focus\n *For my ——— what is the _ONE_ Thing I can do hit my goals today, such that by\ndoing it everything else will be easier or unnecessary?*\n\n*** Career\n*** Health\n*** Relationships\n*** Health\n*** Personal Growth\n* GTD\n\n* LOG\n\n* Reflect\n\n"))))
+#+end_src
+* PROGRAMING
+** Python
+#+begin_src emacs-lisp
+    (use-package python-mode
+      :mode ("\\.py\\'" . python-mode)
+      :interpreter ("python" . python-mode)
+      :config
+      (setq python-indent-offset 4))
+
+    ;; Install and configure LSP mode for code completion and linting
+    (use-package lsp-mode
+      :hook (python-mode . lsp)
+      :commands lsp
+      :config
+      (setq lsp-prefer-flymake nil) ; Use lsp-ui and flycheck instead of flymake
+      (setq lsp-pyls-plugins-pylint-enabled t) ; Enable pylint
+      (setq lsp-pyls-plugins-flake8-enabled t) ; Enable flake8
+      (setq lsp-pyls-plugins-yapf-enabled t)) ; Enable yapf
+
+      ;; Optional: Install and configure lsp-ui for additional features
+    (use-package lsp-ui
+      :hook (lsp-mode . lsp-ui-mode)
+      :config
+      (setq lsp-ui-doc-enable nil) ; Disable the documentation popup
+      (setq lsp-ui-sideline-enable t) ; Show symbol information in the sideline
+      (setq lsp-ui-sideline-show-hover t))
+
+      ;; Optional: Install and configure flycheck for on-the-fly syntax checking
+    (use-package flycheck
+      :hook (lsp-mode . flycheck-mode))
+
+      ;; Optional: Install and configure blacken for automatic code formatting
+    (use-package blacken
+      :hook (python-mode . blacken-mode))
+    (add-hook 'python-mode-hook 'hs-minor-mode)
+
+    (defun my-python-mode-keys ()
+      (when (bound-and-true-p evil-local-mode)
+        (evil-define-key 'normal python-mode-map (kbd "TAB") 'hs-toggle-hiding)))
+
+    (add-hook 'python-mode-hook 'my-python-mode-keys)
+#+end_src
