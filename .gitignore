@@ -1,0 +1,14 @@
+*
+!emacs/config.org
+!emacs/init.el
+!emacs/README.org
+
+!hypr/hyprland.conf
+!hypr/hyprpaper.conf
+!hypr/README.org
+
+!kitty/kitty.conf
+!waybar/*
+!*.org
+
+!.gitignore
