@@ -3,6 +3,7 @@
 
 
 * PACKAGE MANAGEMENT
+
 #+begin_src emacs-lisp
 (defvar elpaca-installer-version 0.4)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
@@ -41,6 +42,7 @@
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 #+end_src
+
 * GENERAL BEHAVIOUR
 ** Evil Mode
   #+begin_src emacs-lisp
@@ -109,7 +111,6 @@
      "o b" '(bookmark-bmenu-list :which-key "List Bookmarks")))
 #+end_src
 
-
 ** Hydra
 #+begin_src emacs-lisp
   (use-package hydra
@@ -151,88 +152,100 @@ Using the Solaized theme
 ** Org Mode 
 Org mode configuration
 #+begin_src emacs-lisp
-        ;; Enable automatic line wrapping in org mode
-        (add-hook 'org-mode-hook
-                  (lambda ()
-                    (setq fill-column 80) ; Set the desired line width
-                    (turn-on-auto-fill)))
+  ;; Enable automatic line wrapping in org mode
+  (setq org-indent-indentation-per-level 5)
+  (setq org-ellipsis "⤵")
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (setq fill-column 80) ; Set the desired line width
+              (turn-on-auto-fill)))
 
-        ;; Configure visual line mode for org mode
-        (add-hook 'org-mode-hook 'visual-line-mode)
-        (add-to-list 'org-structure-template-alist
-                     '("s" "#+NAME: ?\n#+BEGIN_SRC \n\n#+END_SRC"))
-        (setq org-confirm-babel-evaluate nil)
+  ;; Configure visual line mode for org mode
+  (add-hook 'org-mode-hook 'visual-line-mode)
+  (add-hook 'org-mode-hook (lambda () (display-line-numbers-mode -1)))
+    (add-to-list 'org-structure-template-alist
+                 '("s" "#+NAME: ?\n#+BEGIN_SRC \n\n#+END_SRC"))
+    (setq org-confirm-babel-evaluate nil)
 
 
-        (defun org-icons ()
-          "Beautify org mode keywords."
-          (setq prettify-symbols-alist '(("TODO" . "")
-                                         ("INBOX" . "")
-                                         ("NEXT" . "")
-                                         ("WAITING" . "")        
-                                         ("WAIT" . "")        
-                                         ("NOPE" . "")
-                                         ("DONE" . "")
-                                         ("[#A]" . "")
-                                         ("[#B]" . "")
-                                         ("[#C]" . "")
-                                         ("[ ]" . "")
-                                         ("[X]" . "")
-                                         ("[-]" . "")
-                                         ("#+BEGIN_SRC" . "")
-                                         ("#+END_SRC" . "")
-                                         ("#+begin_src" . "")
-                                         ("#+end_src" . "")
-                                         (":PROPERTIES:" . "")
-                                         ("#+OPTIONS" . "")
-                                         (":END:" . "―")
-                                         ("#+STARTUP:" . "")
-                                         ("#+TITLE: " . "")
-                                         ("#+RESULTS:" . "")
-                                         ("#+DESCRIPTION:" . "")
-                                         ("#+NAME:" . "")
-                                         ("#+ROAM_TAGS:" . "")
-                                         ("#+FILETAGS:" . "")
-                                         ("#+HTML_HEAD:" . "")
-                                         ("#+SUBTITLE:" . "")
-                                         ("#+AUTHOR:" . "")
-                                         (":Effort:" . "")
-                                         ("SCHEDULED:" . "")
-                                         ("DEADLINE:" . "")))
-          (prettify-symbols-mode))
-        (add-hook 'org-mode-hook #'org-icons)
+    (defun org-icons ()
+      "Beautify org mode keywords."
+      (setq prettify-symbols-alist '(("TODO" . "")
+                                     ("INBOX" . "")
+                                     ("NEXT" . "")
+                                     ("WAITING" . "")        
+                                     ("WAIT" . "")        
+                                     ("NOPE" . "")
+                                     ("DONE" . "")
+                                     ("[#A]" . "")
+                                     ("[#B]" . "")
+                                     ("[#C]" . "")
+                                     ("[ ]" . "")
+                                     ("[X]" . "")
+                                     ("[-]" . "")
+                                     ("#+BEGIN_SRC" . "")
+                                     ("#+END_SRC" . "")
+                                     ("#+begin_src" . "")
+                                     ("#+end_src" . "")
+                                     (":PROPERTIES:" . "")
+                                     ("#+OPTIONS" . "")
+                                     (":END:" . "―")
+                                     ("#+STARTUP:" . "")
+                                     ("#+TITLE: " . "")
+                                     ("#+RESULTS:" . "")
+                                     ("#+DESCRIPTION:" . "")
+                                     ("#+NAME:" . "")
+                                     ("#+ROAM_TAGS:" . "")
+                                     ("#+FILETAGS:" . "")
+                                     ("#+HTML_HEAD:" . "")
+                                     ("#+SUBTITLE:" . "")
+                                     ("#+AUTHOR:" . "")
+                                     (":Effort:" . "")
+                                     ("SCHEDULED:" . "")
+                                     ("DEADLINE:" . "")))
+      (prettify-symbols-mode))
+    (add-hook 'org-mode-hook #'org-icons)
 
-        (use-package org-superstar
-          :config
-          (setq org-superstar-special-todo-items t)
-          (add-hook 'org-mode-hook (lambda ()
-                                     (org-superstar-mode 1))))
-        (defface my-ligature-face
-          '((t (:family "Fira Code" :height 1.0))) ;; Replace "Fira Code" with the name of your desired font
-          "Face for ligature"
-          :group 'org-faces)
+    (use-package org-superstar
+      :config
+      (setq org-superstar-special-todo-items t)
+      (add-hook 'org-mode-hook (lambda ()
+                                 (org-superstar-mode 1))))
+    (defface my-ligature-face
+      '((t (:family "Fira Code" :height 1.0))) ;; Replace "Fira Code" with the name of your desired font
+      "Face for ligature"
+      :group 'org-faces)
 
-      (use-package org-appear
-        :hook (org-mode . org-appear-mode))
-      (setq org-startup-indented t
-            org-pretty-entities t
-            org-hide-emphasis-markers t
-            org-startup-with-inline-images t
-            org-image-actual-width '(300))
-      (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
+    (use-package org-appear
+      :hook (org-mode . org-appear-mode))
+    (setq org-startup-indented t
+          org-pretty-entities t
+          org-hide-emphasis-markers t
+          org-startup-with-inline-images t
+          org-image-actual-width '(300))
+    (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
     ;; Configure org-mode to open links in the same buffer
     (setq org-return-follows-link t)
 
 
-  (defun my-org-mode-keys ()
-    (when (bound-and-true-p evil-local-mode)
-      (evil-define-key 'normal org-mode-map (kbd "RET") 'org-open-at-point)))
+    (defun my-org-mode-keys ()
+      (when (bound-and-true-p evil-local-mode)
+        (evil-define-key 'normal org-mode-map (kbd "RET") 'org-open-at-point)))
 
-  (add-hook 'org-mode-hook 'my-org-mode-keys)
+    (add-hook 'org-mode-hook 'my-org-mode-keys)
 
     ;; Configure evil-mode to open links in the same buffer
 
 #+end_src
+*** Babel
+#+begin_src emacs-lisp
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (python . t)))
+  (setq org-confirm-babel-evaluate nil)
+#+end_src
+
 ** Org Roam
 #+begin_src emacs-lisp
     (use-package org-roam
@@ -276,6 +289,7 @@ Org mode configuration
            "* %<%H:%M> %?\n\n"
            :target (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n\n* The One Thing\n** Big Picture\n*** Career\n*** Health\n*** Relationships\n*** Health\n*** Personal Growth\n** Focus\n *For my ——— what is the _ONE_ Thing I can do hit my goals today, such that by\ndoing it everything else will be easier or unnecessary?*\n\n*** Career\n*** Health\n*** Relationships\n*** Health\n*** Personal Growth\n* GTD\n\n* LOG\n\n* Reflect\n\n"))))
 #+end_src
+
 * PROGRAMING
 ** Python
 #+begin_src emacs-lisp
