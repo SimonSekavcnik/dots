@@ -1,0 +1,5 @@
+#+TITLE: Hyprland Configuration
+
+* Hyprpaper
+~hyprpaper.conf~ configures the wallpapers used by each monitor.
+File path should be configured.
