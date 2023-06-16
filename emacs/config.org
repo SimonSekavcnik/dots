@@ -294,9 +294,9 @@ Org mode configuration
       (org-roam-db-autosync-enable)
       (defhydra my-org-roam-hydra (:color blue :hint nil)
         "
-                  ^Roam^                ^Capture^        ^Dailies^ 
-                  ^────^──────────────  ^──────^───────  ^———————^—————
-                  _g_: Goto             _c_: Capture     _T_: Today
+                  ^Roam^                ^Capture^        ^Dailies^       ^Cite^
+                  ^────^──────────────  ^──────^───────  ^———————^—————  ^————^——————————————
+                  _g_: Goto             _c_: Capture     _T_: Today      _C_: Insert Citation
                   _i_: Insert           _r_: Refile      _L_: Tomorrow
                   _f_: Find             _d_: Delete      _Y_: Yesterday
                   _l_: Insert Link                     _F_: Find Date
@@ -313,7 +313,8 @@ Org mode configuration
         ("T" org-roam-dailies-goto-today)
         ("L" org-roam-dailies-goto-tommorow)
         ("Y" org-roam-dailies-goto-yesterday)
-        ("F" org-roam-dailies-find-date))
+        ("F" org-roam-dailies-find-date)
+        ("C" org-cite-insert))
       (general-define-key
        :prefix "SPC"
        :states '(motion normal visual)
