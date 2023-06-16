@@ -129,6 +129,15 @@
   :ensure t)
 
 #+end_src
+** Tabs
+** External Programs
+#+begin_src emacs-lisp :results none
+(use-package openwith
+  :config
+  (openwith-mode t)
+  (setq openwith-associations '(("\\.pdf\\'" "evince" (file)))))
+#+end_src
+
 * APPEARANCE
 ** Theme
 Using the Solaized theme
@@ -281,7 +290,7 @@ Org mode configuration
       :custom
       (org-roam-directory "~/.roam")
       :config
-      (setq org-roam-node-display-template "${title:200} ${tags:100}")
+      (setq org-roam-node-display-template "${title:200} ${tags:200}")
       (org-roam-db-autosync-enable)
       (defhydra my-org-roam-hydra (:color blue :hint nil)
         "
@@ -319,6 +328,8 @@ Org mode configuration
       :init
       (helm-mode 1)
       :config
+      (setq helm-split-window-in-side-p t)
+      (setq helm-split-window-default-side 'below)
       (setq helm-truncate-lines t)
       :bind
       (("M-x"     . helm-M-x) ;; Evaluate functions
@@ -346,39 +357,35 @@ Org mode configuration
            :target (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n\n* The One Thing\n** Big Picture\n*** Career\n*** Health\n*** Relationships\n*** Health\n*** Personal Growth\n** Focus\n *For my ——— what is the _ONE_ Thing I can do hit my goals today, such that by\ndoing it everything else will be easier or unnecessary?*\n\n*** Career\n*** Health\n*** Relationships\n*** Health\n*** Personal Growth\n* GTD\n\n* LOG\n\n* Reflect\n\n"))))
   #+end_src
 ** Other Org Modes
-*** Org Ref
-*** Bibliography
-#+begin_src emacs-lisp :results none
-(use-package helm-bibtex
+** Bibliography
++ Org Roam Bibtex (ORB)
+  #+begin_src emacs-lisp :results none
+(use-package org-roam-bibtex
+  :after org-roam
   :config
-  (setq bibtex-completion-bibliography bib-files-directory
-        bibtex-completion-library-path pdf-files-directory
-        bibtex-completion-pdf-field "File"
-        bibtex-completion-notes-path bib-notes-directory)
+  (require 'org-ref)) ; optional: if using Org-ref v2 or v3 citation links
+  #+end_src
++ Org Ref
+  #+begin_src emacs-lisp :results none
+(use-package org-ref)
+  #+end_src
++ Citar
+  #+begin_src emacs-lisp :results none
 
-  ;; Símbolos usados para indicar que tiene PDF y notas
-  (setq bibtex-completion-pdf-symbol "⌘")
-  (setq bibtex-completion-notes-symbol "✎")
-  (setq bibtex-completion-additional-search-fields '(journal booktitle))
+  #+end_src
 
-
-  (setq bibtex-completion-notes-extension ".org")
-  (setq bibtex-completion-pdf-extension '(".pdf" ".djvu" ".txt"))
-
-  ;; Para abrir URL/DOIs
-  (setq bibtex-completion-browser-function
-        (lambda (url _) (start-process "firefox" "*firefox*" "firefox" url)))
-
-  (helm-add-action-to-source
-   "Open annotated PDF (if present)" 'helm-bibtex-open-annotated-pdf
-   helm-source-bibtex 1)
-
-  :bind
-  (("C-x C-b" . helm-bibtex)
-   ("<menu>" . helm-bibtex)
-   :map helm-command-map
-   ("b" . helm-bibtex)))
-#+end_src
++ Helm-Bibtexo
+  #+begin_src emacs-lisp :results none
+    (use-package helm-bibtex
+      :ensure t
+      :config
+      (define-key org-mode-map (kbd "C-c c") 'helm-bibtex)
+      (setq bibtex-completion-bibliography "~/Work/.library/ref.bib"
+            bibtex-completion-library-path "~/Work/.library/pdfs"
+                bibtex-completion-notes-path "~/.roam/notes"))
+    (setq org-cite-follow-processor 'helm-bibtex-org-cite-follow)
+    (setq org-cite-global-bibliography '("~/Work/.library/ref.bib"))
+  #+end_src
 
 ** Projectile
 
