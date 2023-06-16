@@ -135,7 +135,10 @@
 (use-package openwith
   :config
   (openwith-mode t)
-  (setq openwith-associations '(("\\.pdf\\'" "evince" (file)))))
+  (setq openwith-associations '(("\\.pdf\\'" "evince" (file))))
+
+  ;; Open PDF files externally
+  (add-to-list 'auto-mode-alist '("\\.pdf\\'" . openwith-open-pdf-externally)))
 #+end_src
 
 * APPEARANCE
@@ -445,3 +448,5 @@ Org mode configuration
 
     (add-hook 'python-mode-hook 'my-python-mode-keys)
 #+end_src
+
+[cite:@jarzyna2019ultimate]
