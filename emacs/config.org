@@ -1,5 +1,7 @@
-#+title: Simon's GNU Emacs Configuration 
-#+author: Simon Sekavčnik
+#+TITLE: Simon's GNU Emacs Configuration 
+#+AUTHOR: Simon Sekavčnik
+#+STARTUP: overview
+
 * PACKAGE MANAGEMENT
 #+begin_src emacs-lisp :results none
 (defvar elpaca-installer-version 0.4)
@@ -113,6 +115,20 @@
     :ensure t)
 #+end_src
 
+** Ivy
+#+begin_src emacs-lisp :results none
+(use-package ivy
+  :ensure t
+  :config
+  (ivy-mode 1))
+
+(use-package counsel
+  :ensure t)
+
+(use-package swiper
+  :ensure t)
+
+#+end_src
 * APPEARANCE
 ** Theme
 Using the Solaized theme
@@ -256,7 +272,8 @@ Org mode configuration
 #+end_src
 
 ** Org Roam
-#+begin_src emacs-lisp :results none
++ Configuration for Org-roam
+  #+begin_src emacs-lisp :results none
     (use-package org-roam
       :ensure t
       :init
@@ -264,16 +281,18 @@ Org mode configuration
       :custom
       (org-roam-directory "~/.roam")
       :config
+      (setq org-roam-node-display-template "${title:200} ${tags:100}")
+      (org-roam-db-autosync-enable)
       (defhydra my-org-roam-hydra (:color blue :hint nil)
         "
-          ^Roam^                ^Capture^        ^Dailies^ 
-          ^────^──────────────  ^──────^───────  ^———————^—————
-          _g_: Goto             _c_: Capture     _T_: Today
-          _i_: Insert           _r_: Refile      _L_: Tomorrow
-          _f_: Find             _d_: Delete      _Y_: Yesterday
-          _l_: Insert Link                     _F_: Find Date
-          _n_: Header Node
-          "
+                  ^Roam^                ^Capture^        ^Dailies^ 
+                  ^────^──────────────  ^──────^───────  ^———————^—————
+                  _g_: Goto             _c_: Capture     _T_: Today
+                  _i_: Insert           _r_: Refile      _L_: Tomorrow
+                  _f_: Find             _d_: Delete      _Y_: Yesterday
+                  _l_: Insert Link                     _F_: Find Date
+                  _n_: Header Node
+                  "
         ("g" org-roam-node-find)
         ("i" org-roam-node-insert)
         ("f" org-roam-node-find)
@@ -293,15 +312,73 @@ Org mode configuration
        "r" '(my-org-roam-hydra/body :which-key "Org Roam")))
 
 
-  (setq org-return-follows-link t)
+    (setq org-return-follows-link t)
 
+    ;; Install helm if not already installed
+    (use-package helm
+      :init
+      (helm-mode 1)
+      :config
+      (setq helm-truncate-lines t)
+      :bind
+      (("M-x"     . helm-M-x) ;; Evaluate functions
+       ("C-x C-f" . helm-find-files) ;; Open or create files
+       ("C-x b"   . helm-mini) ;; Select buffers
+       ("C-x C-r" . helm-recentf) ;; Select recently saved files
+       ("C-c i"   . helm-imenu) ;; Select document heading
+       ("M-y"     . helm-show-kill-ring) ;; Show the kill ring
+       :map helm-map
+       ("C-z" . helm-select-action)
+       ("<tab>" . helm-execute-persistent-action)))
+
+
+    ;; Optional: Set Helm keybindings (if desired)
+    (global-set-key (kbd "C-x C-f") 'helm-find-files)
+    (global-set-key (kbd "M-x") 'helm-M-x)
+
+#+end_src
+
++ Org roam dailies
+  #+begin_src emacs-lisp :results none
   (setq org-roam-dailies-capture-templates
         '(("d" "default" entry
            "* %<%H:%M> %?\n\n"
            :target (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n\n* The One Thing\n** Big Picture\n*** Career\n*** Health\n*** Relationships\n*** Health\n*** Personal Growth\n** Focus\n *For my ——— what is the _ONE_ Thing I can do hit my goals today, such that by\ndoing it everything else will be easier or unnecessary?*\n\n*** Career\n*** Health\n*** Relationships\n*** Health\n*** Personal Growth\n* GTD\n\n* LOG\n\n* Reflect\n\n"))))
-#+end_src
+  #+end_src
 ** Other Org Modes
 *** Org Ref
+*** Bibliography
+#+begin_src emacs-lisp :results none
+(use-package helm-bibtex
+  :config
+  (setq bibtex-completion-bibliography bib-files-directory
+        bibtex-completion-library-path pdf-files-directory
+        bibtex-completion-pdf-field "File"
+        bibtex-completion-notes-path bib-notes-directory)
+
+  ;; Símbolos usados para indicar que tiene PDF y notas
+  (setq bibtex-completion-pdf-symbol "⌘")
+  (setq bibtex-completion-notes-symbol "✎")
+  (setq bibtex-completion-additional-search-fields '(journal booktitle))
+
+
+  (setq bibtex-completion-notes-extension ".org")
+  (setq bibtex-completion-pdf-extension '(".pdf" ".djvu" ".txt"))
+
+  ;; Para abrir URL/DOIs
+  (setq bibtex-completion-browser-function
+        (lambda (url _) (start-process "firefox" "*firefox*" "firefox" url)))
+
+  (helm-add-action-to-source
+   "Open annotated PDF (if present)" 'helm-bibtex-open-annotated-pdf
+   helm-source-bibtex 1)
+
+  :bind
+  (("C-x C-b" . helm-bibtex)
+   ("<menu>" . helm-bibtex)
+   :map helm-command-map
+   ("b" . helm-bibtex)))
+#+end_src
 
 ** Projectile
 
