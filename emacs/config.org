@@ -170,6 +170,11 @@ Using the Solaized theme
   (setq inhibit-startup-message t
     initial-scratch-message "* SIMON'S EMACS"
         cursor-type 'bar)
+(add-hook 'emacs-startup-hook
+        (lambda ()
+        (when (eq major-mode 'org-mode)
+            (org-sticky-header-mode -1))))
+
 #+end_src
 
 * MODES
@@ -270,6 +275,13 @@ Org mode configuration
       ("s" . "src")
       ("se" . "src emacs-lisp\n")
       ("v" . "verse\n")))
+(use-package org-sticky-header
+  :ensure t
+  :hook (org-mode . org-sticky-header-mode)
+  :config
+  (setq org-sticky-header-full-path 'full
+        org-sticky-header-outline-path 'breadcrumb))
+
 
 #+end_src
 
@@ -364,10 +376,10 @@ Org mode configuration
 ** Bibliography
 + Org Roam Bibtex (ORB)
   #+begin_src emacs-lisp :results none
-(use-package org-roam-bibtex
-  :after org-roam
-  :config
-  (require 'org-ref)) ; optional: if using Org-ref v2 or v3 citation links
+    (use-package org-roam-bibtex
+      :after org-roam
+      :config
+      (require 'org-ref)) ; optional: if using Org-ref v2 or v3 citation links
   #+end_src
 + Org Ref
   #+begin_src emacs-lisp :results none
@@ -386,11 +398,12 @@ Org mode configuration
       (define-key org-mode-map (kbd "C-c c") 'helm-bibtex)
       (setq bibtex-completion-bibliography "~/Work/.library/ref.bib"
             bibtex-completion-library-path "~/Work/.library/pdfs"
-                bibtex-completion-notes-path "~/.roam/notes"))
+            bibtex-completion-notes-path "~/.roam/notes"))
     (setq org-cite-follow-processor 'helm-bibtex-org-cite-follow)
     (setq org-cite-global-bibliography '("~/Work/.library/ref.bib"))
   #+end_src
-
+ [cite:@notzel2022operating] 
+ 
 ** Projectile
 
 * PROGRAMING
