@@ -8,12 +8,12 @@
     "height": 0,
     "modules-left": [
         "wlr/workspaces",
-        "tray"
     ],
     "modules-center": [
         "clock"
     ],
     "modules-right": [
+        "tray"
         "custom/weather",
         //"custom/updates",
 	"network",

@@ -178,6 +178,11 @@ Using the Solaized theme
 #+end_src
 
 * MODES
+** IBuffer
+#+begin_src emacs-lisp :results none
+;;; emacs/ibuffer/config.el -*- lexical-binding: t; -*-
+
+#+end_src
 ** Org Mode 
 Org mode configuration
 #+begin_src emacs-lisp :results none
@@ -285,6 +290,10 @@ Org mode configuration
 
 #+end_src
 
+#+begin_src emacs-lisp :results none
+(setq org-cite-activate-plain-format "\\cite{%l}")
+
+#+end_src
 
 *** Babel
 #+begin_src emacs-lisp :results none
@@ -329,7 +338,7 @@ Org mode configuration
         ("L" org-roam-dailies-goto-tommorow)
         ("Y" org-roam-dailies-goto-yesterday)
         ("F" org-roam-dailies-find-date)
-        ("C" org-cite-insert))
+        ("C" org-ref-cite-insert-helm))
       (general-define-key
        :prefix "SPC"
        :states '(motion normal visual)
@@ -372,6 +381,19 @@ Org mode configuration
            "* %<%H:%M> %?\n\n"
            :target (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n\n* The One Thing\n** Big Picture\n*** Career\n*** Health\n*** Relationships\n*** Health\n*** Personal Growth\n** Focus\n *For my ——— what is the _ONE_ Thing I can do hit my goals today, such that by\ndoing it everything else will be easier or unnecessary?*\n\n*** Career\n*** Health\n*** Relationships\n*** Health\n*** Personal Growth\n* GTD\n\n* LOG\n\n* Reflect\n\n"))))
   #+end_src
++ Contacts
+  #+begin_src emacs-lisp :results none
+    (setq org-roam-capture-templates
+          '(
+            ("d" "default" plain
+             "%?"
+             :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+TITLE: ${title}\n")
+             :unnarrowed t)
+            ("C" "New Contact" plain
+             "* %(read-string \"Contact Name:\")\n:PROPERTIES:\n:ID: %(org-id-new)\n:FILETAGS: PERSON %(read-string \"Tags:\")\n:EMAIL: %(read-string \"Email:\")\n:PHONE: %(read-string \"Phone:\")\n:END:\n\n"
+             :if-new (file+head "Contacts.org" "#+TITLE: Contacts\n")
+             :unnarrowed t)))
+  #+end_src
 ** Other Org Modes
 ** Bibliography
 + Org Roam Bibtex (ORB)
@@ -396,14 +418,18 @@ Org mode configuration
       :ensure t
       :config
       (define-key org-mode-map (kbd "C-c c") 'helm-bibtex)
+      (setq bibtex-completion-notes-template-multiple-files
+             "#+TITLE: ${author-or-editor} (${year}): ${title}\n:PROPERTIES:\n:ID: %(org-id-new)\n:FILETAGS: NOTES PAPER\n:END:\n\n [[/home/simon/Work/.library/pdfs/][PDF]]")
       (setq bibtex-completion-bibliography "~/Work/.library/ref.bib"
             bibtex-completion-library-path "~/Work/.library/pdfs"
-            bibtex-completion-notes-path "~/.roam/notes"))
+            bibtex-completion-notes-path "~/.roam/papers"))
     (setq org-cite-follow-processor 'helm-bibtex-org-cite-follow)
     (setq org-cite-global-bibliography '("~/Work/.library/ref.bib"))
   #+end_src
- [cite:@notzel2022operating] 
- 
+** LaTeX
+#+begin_src emacs-lisp :results none
+(setq org-latex-to-pdf-process (list "latexmk -pdf %f"))
+#+end_src
 ** Projectile
 
 * PROGRAMING
