@@ -13,7 +13,7 @@
         "clock"
     ],
     "modules-right": [
-        "tray"
+        "tray",
         "custom/weather",
         //"custom/updates",
 	"network",

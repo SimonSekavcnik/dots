@@ -130,6 +130,13 @@
 
 #+end_src
 ** Tabs
+** Spell Checking
+#+begin_src emacs-lisp :results none
+  (setq ispell-program-name "hunspell")
+  (setq ispell-program-name (executable-find "hunspell"))
+  (setq ispell-local-dictionary "en_US")
+#+end_src
+
 ** External Programs
 #+begin_src emacs-lisp :results none
 (use-package openwith
@@ -147,7 +154,7 @@ Using the Solaized theme
 #+begin_src emacs-lisp :results none
   (use-package solarized-theme
     :config
-    (load-theme 'solarized-dark t)) ; Choose 'solarized-light' for light theme
+    (load-theme 'solarized-light t)) ; Choose 'solarized-light' for light theme
 #+end_src
 
 ** Disable Menubar, Toolbars and Scrollbars
@@ -291,8 +298,10 @@ Org mode configuration
 #+end_src
 
 #+begin_src emacs-lisp :results none
-(setq org-cite-activate-plain-format "\\cite{%l}")
-
+  (setq org-cite-activate-plain-format "\\cite{%l}")
+  (add-to-list 'load-path "~/.config/emacs/site-lisp")
+  (load "~/.config/emacs/site-lisp/org-pretty-table.el")
+  (add-hook 'org-mode-hook #'org-pretty-table-mode)
 #+end_src
 
 *** Babel

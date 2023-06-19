@@ -2,6 +2,7 @@
 !emacs/config.org
 !emacs/init.el
 !emacs/README.org
+!emacs/site-lisp/*
 
 !hypr/hyprland.conf
 !hypr/hyprpaper.conf
