@@ -1,8 +1,20 @@
 #+TITLE: Simon's GNU Emacs Configuration 
-#+AUTHOR: Simon Sekavčnik
+#+author: Simon Sekavčnik
 #+STARTUP: overview
+#+date: [2023-10-10 pet 00:11]
+#+lastmod: [2023-08-13 ned 17:05]
+#+hugo_base_dir: ~/Blog/
+#+hugo_custom_front_matter: :url emacs-config
+#+hugo_custom_front_matter: :featured false
+#+hugo_custom_front_matter: :summary My Emacs Config
+#+filetags: emacs:dots
+
+This is my emacs configuration. Do with is as you will. This configuration is a
+work in progress, so anything can break at any point. You can also find this
+file in my [[https://github.com/SimonSekavcnik/dots][dots]].
 
 * PACKAGE MANAGEMENT
+Configuration for Elpaca [[https://github.com/progfolio/elpaca][An Elisp Package Manager]]:
 #+begin_src emacs-lisp :results none
 (defvar elpaca-installer-version 0.4)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
@@ -41,40 +53,40 @@
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 #+end_src
-
 * GENERAL BEHAVIOUR
 ** Evil Mode
+I like vim key bindings: [[https://github.com/emacs-evil/evil][EVIL]]
 #+begin_src emacs-lisp :results none
-    (elpaca elpaca-use-package
-      (elpaca-use-package-mode)
-      (setq elpaca-use-package-by-default t))
-    (elpaca-wait)
+  (elpaca elpaca-use-package
+    (elpaca-use-package-mode)
+    (setq elpaca-use-package-by-default t))
+  (elpaca-wait)
 
 
-    (use-package evil
-      :init
-      (setq evil-want-keybinding nil)
-      (setq evil-want-integration t)
-      (setq evil-vsplit-window-right t)
-      (setq evil-split-window-below t)
-      (setq evil-want-C-i-jump nil)
-      (evil-mode))
-    (use-package evil-collection
-      :after evil
-      :config
-      (setq evil-collecion-mode-list '(dashboard dired ibuffer))
-      (evil-collection-init))
+  (use-package evil
+    :init
+    (setq evil-want-keybinding nil)
+    (setq evil-want-integration t)
+    (setq evil-vsplit-window-right t)
+    (setq evil-split-window-below t)
+    (setq evil-want-C-i-jump nil)
+    (evil-mode))
+  (use-package evil-collection
+    :after evil
+    :config
+    (setq evil-collecion-mode-list '(dashboard dired ibuffer))
+    (evil-collection-init))
 
-    ;;Turns off elpaca-use-package-mode current declartion
-    ;;Note this will cause the declaration to be interpreted immediately (not deferred).
-    ;;Useful for configuring built-in emacs features.
+  ;;Turns off elpaca-use-package-mode current declartion
+  ;;Note this will cause the declaration to be interpreted immediately (not deferred).
+  ;;Useful for configuring built-in emacs features.
 
-    (use-package evil-leader
-      :ensure t
-      :config
-      (evil-leader/set-leader "<SPC>")
-      (evil-leader/set-key-for-mode 'normal "t" 'hydra-toggle/body))
-    (use-package emacs :elpaca nil :config (setq ring-bell-function #'ignore))
+  (use-package evil-leader
+    :ensure t
+    :config
+    (evil-leader/set-leader "<SPC>")
+    (evil-leader/set-key-for-mode 'normal "t" 'hydra-toggle/body))
+  (use-package emacs :elpaca nil :config (setq ring-bell-function #'ignore))
 #+end_src
 
 ** General
@@ -95,24 +107,55 @@
      "f h" '(lambda () (interactive) (find-file "~/.config/hypr/hyprland.conf") :which-key "Open hyprland config")
      "." '(find-file :which-key "Find File")
      ;; BUFFER MANIPULATION
-     "t" '(hydra-toggle/body     :which-key "Toggle theme")
-     "h" '(evil-window-left      :which-key "Move Left")
-     "j" '(evil-window-down      :which-key "Move Down")
-     "k" '(evil-window-up        :which-key "Move Up")
-     "l" '(evil-window-right     :which-key "Move Right")
-     "n j" '(split-window-below  :which-key "Split Below")
-     "n l" '(split-window-right  :which-key "Split Right")
-     "x" '(org-capture           :which-key "Org Capture")
-     "b i" '(ibuffer             :which-key "IBuffer")
-     "o B" '(bookmark-set        :which-key "Set Bookmark")
-     "o b j" '(bookmark-jump     :which-key "Open Bookmark")
-     "o b" '(bookmark-bmenu-list :which-key "List Bookmarks")))
+     "t t" '(toggle-solarized-theme :which-key "Toggle theme")
+     "h" '(evil-window-left       :which-key "Move Left")
+     "j" '(evil-window-down       :which-key "Move Down")
+     "k" '(evil-window-up         :which-key "Move Up")
+     "l" '(evil-window-right      :which-key "Move Right")
+     "n j" '(split-window-below   :which-key "Split Below")
+     "n l" '(split-window-right   :which-key "Split Right")
+     "x" '(org-capture            :which-key "Org Capture")
+     "b i" '(ibuffer              :which-key "IBuffer")
+     "o B" '(bookmark-set         :which-key "Set Bookmark")
+     "o m" '(mu4e                 :which-key "Open Email")
+     "o a" '(org-agenda           :which-key "Org Agenda")
+     "o b" '(bookmark-bmenu-list  :which-key "List Bookmarks")))
 #+end_src
 
 ** Hydra
+Sticky bindings: [[https://github.com/abo-abo/hydra][Hydra]]
 #+begin_src emacs-lisp :results none
   (use-package hydra
     :ensure t)
+#+end_src
+
+** Avy
+Jumping around the buffer: [[https://github.com/abo-abo/avy][avy]]
+#+begin_src emacs-lisp :results none
+  (use-package avy
+    :ensure t
+    :config
+    (defhydra hydra-avy (:color blue :hint nil)
+      "
+                Avy Goto
+                ^Char^   ^Line^   ^Word^  Description
+                ^^^^^——————————————————————————————————————-
+                [_c_]    [_l_]    [_w_]   Jump To
+                [_C_]    [_L_]    [_W_]   Go To
+      "
+      ("c" avy-goto-char)
+      ("l" avy-goto-line)
+      ("w" avy-goto-word-0)
+      ("C" avy-goto-char-2)
+      ("L" avy-goto-line-above)
+      ("W" avy-goto-word-1)
+      ("q" nil :exit t))
+    (general-override-mode)
+    (general-define-key
+     :prefix "SPC"
+     :states '(motion normal visual)
+     :keymaps 'override
+     "a" '(hydra-avy/body :which-key "Avy")))
 #+end_src
 
 ** Ivy
@@ -131,7 +174,7 @@
 #+end_src
 ** Tabs
 ** Spell Checking
-#+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results non
   (setq ispell-program-name "hunspell")
   (setq ispell-program-name (executable-find "hunspell"))
   (setq ispell-local-dictionary "en_US")
@@ -148,13 +191,67 @@
   (add-to-list 'auto-mode-alist '("\\.pdf\\'" . openwith-open-pdf-externally)))
 #+end_src
 
+** Neo
+#+begin_src emacs-lisp :results none
+   (use-package neotree
+     :ensure t
+     :config
+     (add-hook 'neo-after-create-hook
+             (lambda (_)
+               (setq-local display-line-numbers nil)))
+     (defhydra hydra-neotree (:color blue :hint nil)
+
+       "
+              NeoTree Commands
+              ^Navigation^   ^Actions^     ^Toggle^        ^Misc^
+              ^^^^^^^^—————————————————————————————————————————
+              [_n_] Next Line   [_C_] Create   [_t_] Tree      [_r_] Refresh
+              [_p_] Prev Line   [_D_] Delete   [_h_] Hidden    [_s_] Change Root
+              [_q_] Quit
+       "
+       ("n" neotree-next-line)
+       ("p" neotree-previous-line)
+       ("C" neotree-create-node)
+       ("D" neotree-delete-node)
+       ("t" neotree-toggle)
+       ("h" neotree-hidden-file-toggle :which-key "Toggle Hidden Files")
+       ("s" neotree-change-root)
+       ("r" neotree-refresh)
+       ("q" nil :exit t))
+     (general-override-mode)
+     (general-define-key
+      :prefix "SPC"
+      :states '(motion normal visual)
+      :keymaps 'override
+      "o" '(hydra-neotree/body :which-key "NeoTree")))
+#+end_src
 * APPEARANCE
 ** Theme
 Using the Solaized theme
 #+begin_src emacs-lisp :results none
+
   (use-package solarized-theme
     :config
-    (load-theme 'solarized-light t)) ; Choose 'solarized-light' for light theme
+    (load-theme 'solarized-dark t)) ; Choose 'solarized-light' for light theme
+#+end_src
+
+A function to change the theme
+#+begin_src emacs-lisp :results none
+  (defun toggle-solarized-theme ()
+    "Toggle between 'solarized-dark' and 'solarized-light' themes."
+    (interactive)
+    (if (eq (car custom-enabled-themes) 'solarized-dark)
+        (progn
+          (disable-theme 'solarized-dark)
+          (load-theme 'solarized-light t))
+      (progn
+        (disable-theme 'solarized-light)
+        (load-theme 'solarized-dark t))))
+#+end_src
+
+
+#+begin_src emacs-lisp :results none
+(setq org-src-fontify-natively t)
 #+end_src
 
 ** Disable Menubar, Toolbars and Scrollbars
@@ -163,6 +260,7 @@ Using the Solaized theme
   (menu-bar-mode -1)
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
+
 #+end_src
 
 ** Display Line Numbers and Truncate lines
@@ -172,16 +270,33 @@ Using the Solaized theme
 #+end_src
 
 ** Initial Screen
-#+begin_src emacs-lisp :results none
-  (setq initial-major-mode 'org-mode)
-  (setq inhibit-startup-message t
-    initial-scratch-message "* SIMON'S EMACS"
-        cursor-type 'bar)
-(add-hook 'emacs-startup-hook
-        (lambda ()
-        (when (eq major-mode 'org-mode)
-            (org-sticky-header-mode -1))))
 
+#+begin_src emacs-lisp :results none
+  (use-package dashboard
+    :elpaca t
+    :config
+    (add-hook 'elpaca-after-init-hook #'dashboard-insert-startupify-lists)
+    (add-hook 'elpaca-after-init-hook #'dashboard-initialize)
+    (dashboard-setup-startup-hook))
+
+  (setq dashboard-icon-type 'all-the-icons)
+  ;; Set the title
+  (setq dashboard-banner-logo-title "Simon's Emacs")
+  ;; Set the banner
+  ;;(setq dashboard-startup-banner [VALUE])
+  ;; Value can be
+  ;; - nil to display no banner
+  ;; - 'official which displays the official emacs logo
+  ;; - 'logo which displays an alternative emacs logo
+  ;; - 1, 2 or 3 which displays one of the text banners
+  ;; - "path/to/your/image.gif", "path/to/your/image.png" or "path/to/your/text.txt" which displays whatever gif/image/text you would prefer
+  ;; - a cons of '("path/to/your/image.png" . "path/to/your/text.txt")
+
+  ;; Content is not centered by default. To center, set
+  (setq dashboard-center-content t)
+
+  ;; To disable shortcut "jump" indicators for each section, set
+  (setq dashboard-show-shortcuts nil)
 #+end_src
 
 * MODES
@@ -194,9 +309,10 @@ Using the Solaized theme
 Org mode configuration
 #+begin_src emacs-lisp :results none
   ;; Enable automatic line wrapping in org mode
-      (setq org-indent-indentation-per-level 5)
-      (setq org-ellipsis "⤵")
-      (add-hook 'org-mode-hook
+  (setq org-tags-column 80)
+  (setq org-indent-indentation-per-level 5)
+  (setq org-ellipsis "⤵")
+  (add-hook 'org-mode-hook
                 (lambda ()
                   (setq fill-column 80) ; Set the desired line width
                   (turn-on-auto-fill)))
@@ -211,13 +327,7 @@ Org mode configuration
 
         (defun org-icons ()
           "Beautify org mode keywords."
-          (setq prettify-symbols-alist '(("TODO" . "")
-                                         ("INBOX" . "")
-                                         ("NEXT" . "")
-                                         ("WAITING" . "")        
-                                         ("WAIT" . "")        
-                                         ("NOPE" . "")
-                                         ("DONE" . "")
+          (setq prettify-symbols-alist '(
                                          ("[#A]" . "")
                                          ("[#B]" . "")
                                          ("[#C]" . "")
@@ -228,22 +338,41 @@ Org mode configuration
                                          ("#+END_SRC" . "")
                                          ("#+begin_src" . "")
                                          ("#+end_src" . "")
+                                         (":ATTENDEES:" . "")
+                                         (":AUTHORS:" . "")
+                                         (":authors:" . "")
                                          (":PROPERTIES:" . "")
                                          ("#+OPTIONS" . "")
                                          (":END:" . "―")
                                          ("#+STARTUP:" . "")
                                          ("#+TITLE: " . "")
+                                         ("#+title: " . "")
                                          ("#+RESULTS:" . "")
                                          ("#+DESCRIPTION:" . "")
                                          ("#+NAME:" . "")
                                          ("#+ROAM_TAGS:" . "")
                                          ("#+FILETAGS:" . "")
+                                         (":FILETAGS:" . "")
                                          ("#+HTML_HEAD:" . "")
-                                         ("#+SUBTITLE:" . "")
-                                         ("#+AUTHOR:" . "")
-                                         (":Effort:" . "")
-                                         ("SCHEDULED:" . "")
-                                         ("DEADLINE:" . "")))
+                                         ("#+hugo_custom_front_matter:" . "")
+                                         ("#+AUTHOR:" . "")
+                                         ("#+author:" . "")
+                                         ("#+SUBTITLE:" . "")
+                                         (":EFFORT:" . "")
+                                         (":COMPLETED:" . "")
+                                         (":SCHEDULED:" . "")
+                                         (":URL:" . "")
+                                         (":HEART:" . "")
+                                         (":PHONE:" . "")
+                                         (":EMAIL:" . "")
+                                         (":ADDRESS:" . "")
+                                         (":PERSON:" . "")
+                                         ("ACADEMIC" . "")
+                                         (":DEADLINE:" . "")))
+
+
+
+
           (prettify-symbols-mode))
         (add-hook 'org-mode-hook #'org-icons)
 
@@ -304,29 +433,6 @@ Org mode configuration
   (add-hook 'org-mode-hook #'org-pretty-table-mode)
 #+end_src
 
-Org drill
-#+begin_src emacs-lisp :results none
-(use-package org-drill
-  :ensure t
-  :config
-  ;; Enable org-drill when Org mode is loaded
-  (with-eval-after-load 'org
-    (require 'org-drill))
-
-  ;; Customize org-drill settings
-  (setq org-drill-spaced-repetition-algorithm 'sm2
-        org-drill-add-random-noise-to-intervals-p t
-        org-drill-adjust-intervals-for-early-and-late-repetitions-p t
-        org-drill-maximum-items-per-session 30
-        org-drill-learn-fraction 0.25
-        org-drill-allow-visible-cloze-p t)
-
-  ;; Customize org-drill faces (optional)
-  (custom-set-faces
-   '(org-drill-cloze-face ((t (:foreground "red" :weight bold))))
-   '(org-drill-done-cloze-face ((t (:foreground "green" :weight bold))))))
-
-#+end_src
 *** Org-clock
 #+begin_src emacs-lisp :results none
     (setq org-clock-clocktable-default-properties
@@ -368,12 +474,37 @@ Org drill
             :table-line-below "--"))
 #+end_src
 *** Babel
+Install the ~org-contrib~ packge to get more languages
+#+begin_src emacs-lisp :results none
+(use-package org-contrib
+  :ensure t)
+#+end_src
 #+begin_src emacs-lisp :results none
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
-     (python . t)))
+     (python . t)
+     ))
   (setq org-confirm-babel-evaluate nil)
+#+end_src
+*** Darkroom mode
+#+begin_src emacs-lisp :results none
+  (use-package darkroom
+    :ensure t
+    :config
+    (setq darkroom-margins 0.2) ; Adjust the margin size to your preference
+    (setq darkroom-fringes-outside-margins t) ; Set to t if you want fringes outside the margins
+    (setq darkroom-mode-line 'light) ; Use 'light for a light mode-line
+    (setq darkroom-text-scale-increase 2) ; Set to the desired text scale increase
+    :bind
+    ("<f12>" . darkroom-tentative-mode) ; Bind to a keybinding of your choice
+    :hook
+    (darkroom-mode . (lambda ()
+                       (if darkroom-mode
+                           (display-line-numbers-mode -1)
+                         (display-line-numbers-mode 1)))
+                   )
+    )
 #+end_src
 
 ** Org Roam
@@ -434,10 +565,8 @@ Org drill
        ("C-x b"   . helm-mini) ;; Select buffers
        ("C-x C-r" . helm-recentf) ;; Select recently saved files
        ("C-c i"   . helm-imenu) ;; Select document heading
-       ("M-y"     . helm-show-kill-ring) ;; Show the kill ring
-       :map helm-map
-       ("C-z" . helm-select-action)
-       ("<tab>" . helm-execute-persistent-action)))
+       ("M-y"     . helm-show-kill-ring)) ;; Show the kill ring
+      )
 
 
     ;; Optional: Set Helm keybindings (if desired)
@@ -451,7 +580,7 @@ Org drill
   (setq org-roam-dailies-capture-templates
         '(("d" "default" entry
            "* %<%H:%M> %?\n\n"
-           :target (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n\n* The One Thing\n** Big Picture\n*** Career\n*** Health\n*** Relationships\n*** Health\n*** Personal Growth\n** Focus\n *For my ——— what is the _ONE_ Thing I can do hit my goals today, such that by\ndoing it everything else will be easier or unnecessary?*\n\n*** Career\n*** Health\n*** Relationships\n*** Health\n*** Personal Growth\n* GTD\n\n* LOG\n\n* Reflect\n\n"))))
+           :target (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n\n** Focus\n *For my ——— what is the _ONE_ Thing I can do hit my goals today, such that by\ndoing it everything else will be easier or unnecessary?*\n\n*** Career\n*** Health\n*** Relationships\n*** Health\n*** Personal Growth\n* GTD\n\n* LOG\n\n* Reflect\n\n"))))
   #+end_src
 + Contacts
   #+begin_src emacs-lisp :results none
@@ -466,7 +595,44 @@ Org drill
              :if-new (file+head "Contacts.org" "#+TITLE: Contacts\n")
              :unnarrowed t)))
   #+end_src
++ Org-Roam-Ui
+ #+begin_src emacs-lisp :results none
+   (use-package org-roam-ui
+     :after org-roam
+     :config
+     (setq org-roam-ui-sync-theme t
+           org-roam-ui-follow t
+           org-roam-ui-update-on-save t
+           org-roam-ui-open-on-start t))
+
+ #+end_src
+
 ** Other Org Modes
+
++ org drill
+#+begin_src emacs-lisp :results none
+(use-package org-drill
+  :ensure t
+  :config
+  ;; Enable org-drill when Org mode is loaded
+  (with-eval-after-load 'org
+    (require 'org-drill))
+
+  ;; Customize org-drill settings
+  (setq org-drill-spaced-repetition-algorithm 'sm2
+        org-drill-add-random-noise-to-intervals-p t
+        org-drill-adjust-intervals-for-early-and-late-repetitions-p t
+        org-drill-maximum-items-per-session 30
+        org-drill-learn-fraction 0.25
+        org-drill-allow-visible-cloze-p t)
+
+  ;; Customize org-drill faces (optional)
+  (custom-set-faces
+   '(org-drill-cloze-face ((t (:foreground "red" :weight bold))))
+   '(org-drill-done-cloze-face ((t (:foreground "green" :weight bold))))))
+
+#+end_src
+
 ** Bibliography
 + Org Roam Bibtex (ORB)
   #+begin_src emacs-lisp :results none
@@ -491,10 +657,10 @@ Org drill
       :config
       (define-key org-mode-map (kbd "C-c c") 'helm-bibtex)
       (setq bibtex-completion-notes-template-multiple-files
-             "#+TITLE: ${author-or-editor} (${year}): ${title}\n:PROPERTIES:\n:ID: %(org-id-new)\n:FILETAGS: NOTES PAPER\n:END:\n\n [[/home/simon/Work/.library/pdfs/][PDF]]")
+             ":PROPERTIES:\n:ID: %(org-id-new)\n:END:\n#+TITLE: ${author-or-editor} (${year}): ${title}\n:FILETAGS: NOTES PAPER\n\n [[/home/simon/Work/.library/pdfs/][PDF]]\n ${file} \n TEST")
       (setq bibtex-completion-bibliography "~/Work/.library/ref.bib"
             bibtex-completion-library-path "~/Work/.library/pdfs"
-            bibtex-completion-notes-path "~/.roam/papers"))
+            bibtex-completion-notes-path "~/.roam"))
     (setq org-cite-follow-processor 'helm-bibtex-org-cite-follow)
     (setq org-cite-global-bibliography '("~/Work/.library/ref.bib"))
   #+end_src
@@ -504,6 +670,136 @@ Org drill
 #+end_src
 ** Projectile
 
+#+begin_src emacs-lisp :results none
+  (use-package projectile
+    :diminish projectile-mode
+    :config (projectile-mode)
+    :custom ((projectile-completion-system 'helm))
+    :bind-keymap
+    ("C-c p" . projectile-command-map)
+    :init
+    ;; NOTE: Set this to the folder where you keep your Git repos!
+    (when (file-directory-p "~/Projects/")
+      (setq projectile-project-search-path '("~/Projects/")))
+    (setq projectile-switch-project-action #'projectile-dired))
+
+#+end_src
+
+** Ox
++ Ox hugo
+  #+begin_src emacs-lisp :results none
+(use-package ox-hugo
+  :ensure t   
+  :pin melpa  ;`package-archives' 
+  :after ox)
+  #+end_src
+
+** Mu4E
+#+begin_src emacs-lisp :results none
+  (use-package mu4e
+    :elpaca nil
+    :init
+    (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
+    (require 'mu4e)
+    :config
+    (setq mu4e-change-filenames-when-moving t)
+    (setq mu4e-update-interval (* 10 60))
+    (setq mu4e-maildir "~/.mail/")
+    (setq mu4e-attachment-dir "~/Downloads")
+    (setq mu4e-update-interval 300)            ; Update interval (seconds)
+    (setq mu4e-index-cleanup t)                ; Cleanup after indexing
+    (setq mu4e-index-update-error-warning t)   ; Warnings during update
+    (setq mu4e-index-update-in-background t)   ; Background update
+    (setq mu4e-change-filenames-when-moving t) ; Needed for mbsync
+    (setq mu4e-index-lazy-check nil)           ; Don't be lazy, index everything
+    (setq mu4e-completing-read-function 'completing-read)
+    (setq mu4e-contexts (list
+                         (make-mu4e-context
+                          :name "gmail"
+                          :match-func (lambda (msg) (when msg
+                                                      (string-prefix-p "/gmail" (mu4e-message-field msg :maildir))))
+                          :vars `((msmtp-account . "jdm204-personal")
+                                  (user-mail-address . "simon.sekavcnik@gmail.com")
+                                  (mu4e-trash-folder . "/[Gmail]/Bin")
+                                  (mu4e-sent-folder . "/[Gmail]/Sent Mail")
+                                  (mu4e-drafts-folder . "/[Gmail]/Drafts")))
+                         ))
+    (setq
+     mu4e-headers-unread-mark '("u" . "️")
+     mu4e-headers-attach-mark '("a" . "")
+     mu4e-headers-replied-mark '("r" . "")
+     mu4e-headers-new-mark '("N" . "⭐")
+     mu4e-headers-signed-mark '("S" . "✒️")
+     mu4e-headers-trashed-mark '("T" . "❎️")
+     mu4e-headers-draft-mark '("d" . "")
+     mu4e-headers-flagged-mark '("f" . "🏴")
+     mu4e-headers-list-mark '("l" . "️")
+     mu4e-headers-seen-mark '("s" . "")
+     mu4e-headers-encrypted-mark '("e" . "")))
+#+end_src
+
+* GTD (Org Agend)
+This section configures my GTD workflow.
+We configure work states
+
+The files:
+ + [[file:~/.gtd/inbox.org][inbox.org]]
+ + [[file:~/.gtd/ticker.org][tickler.org]]
+ + [[file:~/.gtd/gtd.org][gtd.org]]
+ + [[file:~/.gtd/someday.org][someday.org]]
+need to be added manually by executing "C-[" in the respective buffer.
+
++ Files
+#+begin_src emacs-lisp :results none
+  (setq org-agenda-files '("~/.gtd/gtd.org"
+                         "~/.gtd/inbox.org"
+                         "~/.gtd/tickler.org"
+                         "~/.gtd/someday.org"))
+#+end_src
+
++ Heading States
+#+begin_src emacs-lisp :results none
+(setq org-todo-keywords
+      '((sequence "INBOX" "NEXT" "FEEDBACK" "VERIFY" "WAITING" "|" "DONE" "CANCELED" "DELEGATED")))
+#+end_src
+
++ Org Capture Templates 
+#+begin_src emacs-lisp :results none
+  (setq org-capture-templates '(("t" "Todo [inbox]" entry
+                                 (file+headline "~/.gtd/inbox.org" "Tasks")
+                                 "* INBOX %i%?")
+                                ("T" "Tickler" entry
+                                 (file+headline "~/.gtd/tickler.org" "Tickler")
+                                 "* %i%? \n %U")))
+#+end_src
+
++ Refiling
+#+begin_src emacs-lisp :results none
+  (setq org-refile-targets '(("~/.gtd/gtd.org" :maxlevel . 3)
+                             ("~/.gtd/someday.org" :level . 1)
+                             ("~/.gtd/tickler.org" :maxlevel . 2)))
+#+end_src
+ #+begin_src emacs-lisp :results none
+   (setq org-agenda-custom-commands
+         '(("g" "GTD Agenda"
+            ((agenda "" ((org-agenda-span 'day)
+                         (org-deadline-warning-days 0)))
+             (todo "NEXT"
+                   ((org-agenda-overriding-header "Next Actions:")
+                    (org-agenda-files '("~/.gtd/gtd.org"))))
+             (todo "WAITING"
+                   ((org-agenda-overriding-header "Waiting For:")
+                    (org-agenda-files '("~/.gtd/gtd.org"))))
+             (todo "INBOX"
+                   ((org-agenda-overriding-header "Inbox:")
+                    (org-agenda-files '("~/.gtd/inbox.org"))))
+             (todo "VERIFY"
+                   ((org-agenda-overriding-header "To Verify:")
+                    (org-agenda-files '("~/.gtd/gtd.org"))))
+             (todo "FEEDBACK"
+                   ((org-agenda-overriding-header "Feedback Needed:")
+                    (org-agenda-files '("~/.gtd/gtd.org"))))))))
+ #+end_src
 * PROGRAMING
 ** Yasnipet
 #+begin_src emacs-lisp :results none
@@ -523,18 +819,25 @@ Org drill
     (use-package python-mode
       :mode ("\\.py\\'" . python-mode)
       :interpreter ("python" . python-mode)
+      :hook (python-mode . lsp-deferred)
       :config
       (setq python-indent-offset 4))
 
     ;; Install and configure LSP mode for code completion and linting
     (use-package lsp-mode
-      :hook (python-mode . lsp)
-      :commands lsp
+      :commands (lsp lsp-deferred)
+      :hook 
+      (lsp-mode . lsp-enable-which-key-integration)
+      :custom
+      (lsp-diagnostics-provider :capf)
+      (lsp-headerline-breadcrumb-enable t)
+      (lsp-headerline-breadcrumb-segments '(project file symbols))
+      (lsp-lens-enable nil)
+      (lsp-disabled-clients '((python-mode . pyls)))
+      :init
+      (setq lsp-keymap-prefix "C-c l") ;; Or 'C-l', 's-l'
       :config
-      (setq lsp-prefer-flymake nil) ; Use lsp-ui and flycheck instead of flymake
-      (setq lsp-pyls-plugins-pylint-enabled t) ; Enable pylint
-      (setq lsp-pyls-plugins-flake8-enabled t) ; Enable flake8
-      (setq lsp-pyls-plugins-yapf-enabled t)) ; Enable yapf
+      )
 
       ;; Optional: Install and configure lsp-ui for additional features
     (use-package lsp-ui
@@ -546,6 +849,7 @@ Org drill
 
       ;; Optional: Install and configure flycheck for on-the-fly syntax checking
     (use-package flycheck
+      :ensure t
       :hook (lsp-mode . flycheck-mode))
 
       ;; Optional: Install and configure blacken for automatic code formatting
@@ -557,7 +861,123 @@ Org drill
       (when (bound-and-true-p evil-local-mode)
         (evil-define-key 'normal python-mode-map (kbd "TAB") 'hs-toggle-hiding)))
 
+  (use-package company
+    :after lsp-mode
+    :hook (lsp-mode . company-mode)
+    :bind (:map company-active-map
+           ("<tab>" . company-complete-selection))
+          (:map lsp-mode-map
+           ("<tab>" . company-indent-or-complete-common))
+    :custom
+    (company-minimum-prefix-length 1)
+    (company-idle-delay 0.0))
+
+  (use-package company-box
+    :hook (company-mode . company-box-mode))
+
     (add-hook 'python-mode-hook 'my-python-mode-keys)
+  (use-package pyvenv
+    :config
+    (pyvenv-mode 1))
+(use-package elpy
+  :ensure t
+  :init
+  (elpy-enable))
 #+end_src
 
-[cite:@jarzyna2019ultimate]
+** Rust
+#+begin_src emacs-lisp :results none
+  ;; Rust mode and dependencies
+  (use-package ob-rust)
+  (use-package rust-mode
+    :mode "\\.rs\\'"
+    :config
+    ;; Set indentation to 4 spaces
+    (setq rust-indent-offset 4)
+    ;; Enable auto-formatting on save
+    (add-hook 'rust-mode-hook
+              (lambda () (add-hook 'before-save-hook 'rust-format-buffer nil t))))
+  (add-hook 'rust-mode-hook 'eglot-ensure)
+
+#+end_src
+
+** Docker
++ Dockerfile mode
+#+begin_src emacs-lisp :results none
+;; Dockerfile mode
+(use-package dockerfile-mode
+  :ensure t
+  :mode ("Dockerfile\\'" . dockerfile-mode))
+#+end_src
++ docker-compose mode
+#+begin_src emacs-lisp :results none
+;; Docker-compose mode
+(use-package docker-compose-mode
+  :ensure t
+  :mode ("docker-compose\\.yml\\'" . docker-compose-mode))
+
+#+end_src
++ Docker mode
+#+begin_src emacs-lisp :results none
+;; Docker-related settings
+(use-package docker
+  :ensure t
+  :bind ("C-c d" . docker))
+#+end_src
+
+** Jenkins
+#+begin_src emacs-lisp :results none
+  (use-package jenkinsfile-mode
+    :ensure t
+    :mode (("Jenkinsfile\\'" . jenkinsfile-mode))
+    :config
+    (setq jenkinsfile-mode-indent-offset 4)
+    (add-hook 'jenkinsfile-mode-hook #'yas-minor-mode)
+    (add-hook 'jenkinsfile-mode-hook
+              (lambda ()
+                (setq-local flycheck-command-wrapper-function
+                            (lambda (command) (append '("sh") command))))
+              ))
+#+end_src
+
+** Golang
+#+begin_src emacs-lisp :results none
+  (use-package go-mode
+    :ensure t
+    :mode
+    ("\\.go\\'" . go-mode)   ; Associate .go files with go-mode
+    ("\\.proto\\'" . go-mode) ; Associate .proto files with go-mode
+    :hook
+    (go-mode . (lambda ()
+                 (setq tab-width 2)
+                 (setq indent-tabs-mode nil)
+                 (add-hook 'before-save-hook 'gofmt-before-save nil t))))
+
+  (use-package company-go
+    :ensure t
+    :hook
+    (go-mode . (lambda ()
+                 (set (make-local-variable 'company-backends) '(company-go))
+                 (company-mode))))
+#+end_src
+
+* CUSTOM BEHAVIOUR
+** ORG MODE
+
+*** TUM BEAMER
+#+begin_src emacs-lisp :results none
+  (eval-after-load "ox-latex"
+
+    ;; update the list of LaTeX classes and associated header (encoding, etc.)
+    ;; and structure
+    '(add-to-list 'org-latex-classes
+                  `("beamer"
+                    ,(concat "\\documentclass[presentation]{tumbeamer}\n"
+                             "[DEFAULT-PACKAGES]"
+                             "[PACKAGES]"
+                             "[EXTRA]\n")
+                    ("\\section{%s}" . "\\section*{%s}")
+                    ("\\subsection{%s}" . "\\subsection*{%s}")
+                    ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))))
+    
+#+end_src
