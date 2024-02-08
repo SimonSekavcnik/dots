@@ -7,10 +7,10 @@
     "gtk-layer-shell": true,
     "height": 0,
     "modules-left": [
-        "wlr/workspaces",
+        "hyprland/workspaces",
     ],
     "modules-center": [
-        "clock"
+        "clock",
     ],
     "modules-right": [
         "tray",
@@ -18,7 +18,8 @@
         //"custom/updates",
 	"network",
         "pulseaudio",
-	"battery"
+	"battery",
+        "wlr/workspaces",
     ],
     "battery": {
         "states": {
@@ -46,12 +47,12 @@
         "format-disconnected": "Disconnected ⚠",
         "format-alt": "{ifname}: {ipaddr}/{cidr}"
     },
-    "wlr/workspaces": {
+    "hyprland/workspaces": {
         "on-scroll-up": "hyprctl dispatch workspace e+1",
         "on-scroll-down": "hyprctl dispatch workspace e-1",
         "all-outputs": true,
         "on-click": "activate",
-        "format": "{icon}",
+       	"format": "{icon}",
         "format-icons": {
             "1": "1",
             "2": "2",
@@ -62,10 +63,7 @@
             "7": "7",
             "8": "8",
             "9": "9",
-            "10": "𝜁",
-            "urgent": "",
-            //"active": "",
-            "default": ""
+            "10": "𝜁"
           }
     },
     // "cpu": {
