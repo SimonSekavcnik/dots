@@ -9,8 +9,11 @@
  ;; If there is more than one, they won't work right.
  '(helm-minibuffer-history-key "M-p")
  '(org-agenda-files
-   '("~/.roam/20230914123915-inbox.org" "/home/simon/.config/emacs/config.org"))
- '(package-selected-packages '(hydra)))
+   '("~/.roam/20240215120945-quantum_blockchain.org" "/home/simon/.roam/20230914123915-inbox.org" "/home/simon/.config/emacs/config.org"))
+ '(package-selected-packages '(hydra))
+ '(safe-local-variable-values
+   '((bibtex-completion-bibliography "/home/simon/Work/Projects_2024/04_Biexciton_exciton_cascade_paper/sharelatex/bibliography.bib")
+     (bibtex-completion-bibliography "./bibliography.bib"))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
